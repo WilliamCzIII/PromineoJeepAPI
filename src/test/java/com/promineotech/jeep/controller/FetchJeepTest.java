@@ -1,36 +1,53 @@
 package com.promineotech.jeep.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import com.promineotech.jeep.controller.support.FetchJeepTestSupport;
 import com.promineotech.jeep.entity.Jeep;
 import com.promineotech.jeep.entity.JeepModel;
-
+import org.springframework.test.context.jdbc.SqlConfig;
+import org.springframework.test.jdbc.JdbcTestUtils;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 
-/*@ActiveProfiles("test")
+@ActiveProfiles("test")
 
 
 
 
 @Sql(scripts = {
     
-    "classpath:flyway/migrations/V1.__Jeep_Schema.sql",
+    "classpath:flyway/migrations/V1.0__Jeep_Schema.sql",
     "classpath:flyway/migrations/V1.1__Jeep_Data.sql"},
      
-    config = @SqlConfig(encoding = "utf-8"))
-    */
+    config= @SqlConfig(encoding = "utf-8"))
+ 
 
 class FetchJeepTest extends FetchJeepTestSupport{
   
-  /*@Test
-  void test() {
-    System.out.println(getBaseUri());
+  /*
+   * Test to check if the database is reading correctly
+   * 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  
+  @Test
+  void testDb() {
+    int numRows = JdbcTestUtils.countRowsInTable(jdbcTemplate, "customers");
+    System.out.println("num= " + numRows);
+   
   }
   */
   
@@ -42,6 +59,7 @@ class FetchJeepTest extends FetchJeepTestSupport{
 
   private int serverPort;
 */
+  //@Disabled
   @Test
   void testThatJeepsAreReturnedWhenAValidModelAndTrimAreSupplied() {
       //Given: a valid model, trim and URI
@@ -52,11 +70,17 @@ class FetchJeepTest extends FetchJeepTestSupport{
    // System.out.println(uri);
     
       //When: a connection is made to the URI
-   ResponseEntity<Jeep> response = getRestTemplate().getForEntity(uri, Jeep.class);
+   ResponseEntity<List<Jeep>> response = getRestTemplate().exchange(uri, HttpMethod.GET, null,
+       new ParameterizedTypeReference<>() {});
     
     
       //Then: a success (OK -200) status code is returned
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    
+    //And: the actual list returned is the same as the expected list
+    List<Jeep> expected =  buildExpected();
+    //System.out.println(expected);
+    assertThat(response.getBody()).isEqualTo(expected);
     
   }
 
